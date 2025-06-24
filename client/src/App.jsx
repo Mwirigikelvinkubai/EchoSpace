@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Feed from "./pages/Feed";
 import SinglePost from "./pages/SinglePost";
+import Me from "./pages/Me";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/posts/:id" element={<SinglePost />} />
+          <Route path="/me" element={<Me />} />
         </Routes>
       </div>
     </Router>
