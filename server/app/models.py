@@ -58,12 +58,19 @@ class Comment(db.Model):
 
 
 class Mood(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    mood = db.Column(db.String(50))
-    note = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __tablename__ = 'moods'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(50), nullable=False, unique=True)
+
+    posts = db.relationship('Post', backref='mood', lazy=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'label': self.label
+        }
+
 
 class Reaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

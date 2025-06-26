@@ -31,5 +31,15 @@ def create_app():
     from .routes.comment_routes import comment_bp
     app.register_blueprint(comment_bp)
 
+    #mood
+    from .routes.mood_routes import mood_bp
+    app.register_blueprint(mood_bp, url_prefix="/moods")
+
+    #Reaction
+    from .routes.reaction_routes import reaction_bp
+    app.register_blueprint(reaction_bp, url_prefix="/api")
+
+
+
 
     return app
