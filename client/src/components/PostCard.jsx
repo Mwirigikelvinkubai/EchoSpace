@@ -29,13 +29,13 @@ export default function PostCard({ post }) {
             key={emoji}
             onClick={() => handleReact(emoji)}
             className="hover:scale-110 transition-transform"
-            title="React"
           >
             {emoji} <span className="text-sm">({reactions[emoji]})</span>
           </button>
         ))}
       </div>
 
+      {/* ✅ Only navigate to detail */}
       <Link
         to={`/posts/${post.id}`}
         className="text-sm text-indigo-600 hover:underline"
