@@ -13,15 +13,26 @@ class User(db.Model):
     reactions = db.relationship('Reaction', backref='user', lazy=True)
 
 class Post(db.Model):
+    __tablename__ = "posts"
+
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    anonymous = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_anonymous = db.Column(db.Boolean, default=True)
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship("User", backref="posts")
 
-    comments = db.relationship('Comment', backref='post', lazy=True)
-    reactions = db.relationship('Reaction', backref='post', lazy=True)
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "is_anonymous": self.is_anonymous,
+            "timestamp": self.timestamp.isoformat(),
+            "user_id": self.user_id,
+            "username": self.user.username if not self.is_anonymous else "Anonymous"
+        }
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

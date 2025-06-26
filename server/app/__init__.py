@@ -19,7 +19,12 @@ def create_app():
     bcrypt.init_app(app)
     CORS(app)
 
+    # Auth routes
     from .routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/auth")
+
+    # Post routes
+    from .routes.post_routes import post_bp
+    app.register_blueprint(post_bp)  # No prefix so endpoints like /posts, /posts/mine etc work directly
 
     return app
