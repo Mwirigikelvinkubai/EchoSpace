@@ -24,3 +24,17 @@ def add_comment():
 def get_comments(post_id):
     comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.timestamp.asc()).all()
     return jsonify([c.serialize() for c in comments]), 200
+    
+@comment_bp.route('/comments/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_comment(id):
+    user_id = get_jwt_identity()
+    comment = Comment.query.get(id)
+    if not comment:
+        return jsonify({"error": "Comment not found"}), 404
+    if comment.user_id != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({"message": "Comment deleted"}), 200
