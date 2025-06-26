@@ -25,6 +25,11 @@ def create_app():
 
     # Post routes
     from .routes.post_routes import post_bp
-    app.register_blueprint(post_bp)  # No prefix so endpoints like /posts, /posts/mine etc work directly
+    app.register_blueprint(post_bp)  
+
+    #comments routes
+    from .routes.comment_routes import comment_bp
+    app.register_blueprint(comment_bp)
+
 
     return app
