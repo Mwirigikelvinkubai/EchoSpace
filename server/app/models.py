@@ -2,6 +2,8 @@ from . import db
 from datetime import datetime
 
 class User(db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -13,15 +15,14 @@ class User(db.Model):
     reactions = db.relationship('Reaction', backref='user', lazy=True)
 
 class Post(db.Model):
-    __tablename__ = "posts"
+    __tablename__ = 'posts'
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    is_anonymous = db.Column(db.Boolean, default=True)
-    timestamp = db.Column(db.DateTime, server_default=db.func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    is_anonymous = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship("User", backref="posts")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def to_dict(self):
         return {
@@ -33,7 +34,6 @@ class Post(db.Model):
             "username": self.user.username if not self.is_anonymous else "Anonymous"
         }
 
-
 class Comment(db.Model):
     __tablename__ = 'comments'
 
@@ -44,9 +44,6 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
 
-    user = db.relationship('User', backref='comments')
-    post = db.relationship('Post', backref='comments')
-
     def serialize(self):
         return {
             'id': self.id,
@@ -55,7 +52,6 @@ class Comment(db.Model):
             'user': self.user.username,
             'post_id': self.post_id
         }
-
 
 class Mood(db.Model):
     __tablename__ = 'moods'
@@ -71,10 +67,11 @@ class Mood(db.Model):
             'label': self.label
         }
 
-
 class Reaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    emoji = db.Column(db.String(10))
+    __tablename__ = 'reactions'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    emoji = db.Column(db.String(10), nullable=False)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
