@@ -15,16 +15,22 @@ def add_comment():
     if not content or not post_id:
         return jsonify({"error": "Missing content or post_id"}), 400
 
+    post = Post.query.get(post_id)
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
     comment = Comment(content=content, user_id=user_id, post_id=post_id)
     db.session.add(comment)
     db.session.commit()
     return jsonify(comment.serialize()), 201
 
+
 @comment_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
 def get_comments(post_id):
     comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.timestamp.asc()).all()
     return jsonify([c.serialize() for c in comments]), 200
-    
+
+
 @comment_bp.route('/comments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_comment(id):

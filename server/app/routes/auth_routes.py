@@ -39,4 +39,9 @@ def login():
         "exp": datetime.utcnow() + timedelta(days=1)
     }, app.config["SECRET_KEY"], algorithm="HS256")
 
-    return jsonify({"token": token, "username": user.username})
+    return jsonify({
+    "token": token,
+    "username": user.username,
+    "user_id": user.id  
+})
+

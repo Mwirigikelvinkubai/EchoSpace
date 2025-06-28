@@ -8,4 +8,5 @@ mood_bp = Blueprint("mood_bp", __name__)
 @mood_bp.route("/moods", methods=["GET"])
 def get_moods():
     moods = Mood.query.all()
-    return jsonify([mood.to_dict() for mood in moods])
+    return jsonify([mood.serialize() for mood in moods])
+

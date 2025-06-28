@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, Post, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.models import db, Post
 
 post_bp = Blueprint("post_bp", __name__)
 
@@ -9,22 +9,34 @@ post_bp = Blueprint("post_bp", __name__)
 @jwt_required()
 def create_post():
     data = request.get_json()
+    content = data.get("content")
+    is_anonymous = data.get("is_anonymous", False)
     user_id = get_jwt_identity()
 
-    post = Post(
-        content=data.get("content"),
-        is_anonymous=data.get("is_anonymous", True),
+    if not content:
+        return jsonify({"error": "Content is required"}), 422
+
+    new_post = Post(
+        content=content,
+        is_anonymous=is_anonymous,
         user_id=user_id
     )
-    db.session.add(post)
+
+    db.session.add(new_post)
     db.session.commit()
-    return jsonify(post.to_dict()), 201
+
+    return jsonify(new_post.to_dict()), 201
+
 
 # Get all posts (feed)
 @post_bp.route("/posts", methods=["GET"])
 def get_posts():
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return jsonify([post.to_dict() for post in posts]), 200
+    try:
+        posts = Post.query.order_by(Post.timestamp.desc()).all()
+        return jsonify([post.to_dict() for post in posts]), 200
+    except Exception as e:
+      
+        return jsonify({"error": "Internal server error"}), 500
 
 # Get current user's posts
 @post_bp.route("/posts/mine", methods=["GET"])
@@ -34,15 +46,20 @@ def get_my_posts():
     posts = Post.query.filter_by(user_id=user_id).order_by(Post.timestamp.desc()).all()
     return jsonify([post.to_dict() for post in posts]), 200
 
+
 # Delete a post
 @post_bp.route("/posts/<int:post_id>", methods=["DELETE"])
 @jwt_required()
 def delete_post(post_id):
     user_id = get_jwt_identity()
     post = Post.query.get(post_id)
-    if not post or post.user_id != user_id:
-        return jsonify({"error": "Post not found or not authorized"}), 403
+
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    if post.user_id != user_id:
+        return jsonify({"error": "Not authorized to delete this post"}), 403
 
     db.session.delete(post)
     db.session.commit()
-    return jsonify({"message": "Post deleted"}), 200
+    return jsonify({"message": "Post deleted successfully"}), 200
