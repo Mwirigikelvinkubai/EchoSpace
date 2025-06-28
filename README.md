@@ -77,13 +77,13 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
-\# Set up environment variables (optional)
+# Set up environment variables (optional)
 
 export FLASK\_APP=app
 
 export FLASK\_ENV=development
 
-\# Initialize the database
+# Initialize the database
 
 flask db init
 
