@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function PostForm({ onPostCreated }) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [error, setError] = useState(null);
@@ -18,12 +18,12 @@ export default function PostForm({ onPostCreated }) {
     setError(null);
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/posts", {
+      const res = await fetch("http://127.0.0.1:5000/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include", // ✅ use cookie-based JWT
         body: JSON.stringify({
           content,
           is_anonymous: isAnonymous,
@@ -47,9 +47,7 @@ export default function PostForm({ onPostCreated }) {
 
   if (!user) {
     return (
-      <p className="text-center text-gray-500 mt-4">
-        Login to post.
-      </p>
+      <p className="text-center text-gray-500 mt-4">Login to post.</p>
     );
   }
 

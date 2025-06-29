@@ -1,7 +1,8 @@
 # echospace/server/app/routes/reaction_routes.py
 
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import(JWTManager,create_access_token,jwt_required,get_jwt_identity,
+set_access_cookies,set_refresh_cookies,unset_jwt_cookies)
 from ..models import db, Reaction
 
 reaction_bp = Blueprint("reaction_bp", __name__)

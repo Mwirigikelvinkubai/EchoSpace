@@ -1,5 +1,7 @@
 from . import db
 from datetime import datetime
+from passlib.hash import pbkdf2_sha256
+
 
 # ------------------ USER ------------------
 class User(db.Model):
@@ -15,8 +17,12 @@ class User(db.Model):
     moods = db.relationship('Mood', back_populates='user', lazy=True)
     reactions = db.relationship('Reaction', back_populates='user', lazy=True)
 
+    def set_password(self, pw):
+        self.password_hash = pbkdf2_sha256.hash(pw)
 
-# ------------------ POST ------------------
+    def check_password(self, pw):
+        return pbkdf2_sha256.verify(pw, self.password_hash)
+ 
 class Post(db.Model):
     __tablename__ = 'posts'
 

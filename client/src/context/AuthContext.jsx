@@ -4,41 +4,113 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
 
-  // Load user + token from localStorage
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUsername = localStorage.getItem("username");
+  // Helper function to automatically refresh token if access is expired
+  const fetchWithAutoRefresh = async (path, options = {}) => {
+    let res = await fetch(`/api${path}`, {
+      ...options,
+      credentials: 'include',
+    });
 
-    if (storedToken && storedUsername) {
-      setToken(storedToken);
-      setUser({ username: storedUsername });
+    if (res.status === 401) {
+      const refreshRes = await fetch('/api/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (refreshRes.ok) {
+        res = await fetch(`/api${path}`, {
+          ...options,
+          credentials: 'include',
+        });
+      } else {
+        setUser(null);
+      }
     }
-  }, []);
 
-  const login = ({ username, token }) => {
-    setUser({ username });
-    setToken(token);
-    localStorage.setItem("token", token);
-    localStorage.setItem("username", username);
+    return res;
   };
 
-  const logout = () => {
+  // Fetch current user
+  const fetchUser = async () => {
+    try {
+      const res = await fetchWithAutoRefresh('/me');
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+        return true;
+      }
+    } catch (err) {
+      console.error('Fetch user failed:', err);
+    }
+
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
+    return false;
+  };
+
+  // Fetch just the user object without updating context state
+  const fetchMe = async () => {
+    try {
+      const res = await fetchWithAutoRefresh('/me');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.error('Fetch /me failed:', err);
+    }
+    return null;
+  };
+
+  // Run once on mount to load the user if token exists
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  // Login handler
+  const login = async (credentials) => {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(credentials)
+    });
+
+    if (res.ok) {
+      await fetchUser();
+    }
+
+    return res.ok;
+  };
+
+  // Logout handler
+  const logout = async () => {
+    await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        setUser,
+        fetchUser,
+        fetchMe,
+        fetchWithAutoRefresh,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to use the Auth context
+// Custom hook for consuming the AuthContext
 export function useAuth() {
   return useContext(AuthContext);
 }

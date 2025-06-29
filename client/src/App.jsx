@@ -19,7 +19,7 @@ function App() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/posts/:id" element={<SinglePost />} />
           <Route path="/me" element={<Me />} />
-    
+  
         </Routes>
       </div>
     </Router>

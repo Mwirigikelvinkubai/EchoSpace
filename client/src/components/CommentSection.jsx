@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function CommentSection({ postId }) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [comments, setComments] = useState([]);
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:5000/posts/${postId}/comments`)
+    fetch(`http://127.0.0.1:5000/api/posts/${postId}/comments`)
       .then(res => res.json())
       .then(data => setComments(data));
   }, [postId]);
@@ -16,13 +16,13 @@ export default function CommentSection({ postId }) {
     e.preventDefault();
     if (!content.trim()) return;
 
-    const res = await fetch("http://127.0.0.1:5000/comments", {
+    const res = await fetch("http://127.0.0.1:5000/api/comments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ post_id: postId, content })
+      credentials: "include", // ✅ use cookies
+      body: JSON.stringify({ post_id: postId, content }),
     });
 
     if (res.ok) {
@@ -41,8 +41,12 @@ export default function CommentSection({ postId }) {
       <ul className="space-y-2 mb-4">
         {comments.map(comment => (
           <li key={comment.id} className="border p-2 rounded bg-gray-50">
-            <p className="text-sm text-gray-700"><strong>{comment.user}</strong>: {comment.content}</p>
-            <p className="text-xs text-gray-400">{new Date(comment.timestamp).toLocaleString()}</p>
+            <p className="text-sm text-gray-700">
+              <strong>{comment.user}</strong>: {comment.content}
+            </p>
+            <p className="text-xs text-gray-400">
+              {new Date(comment.timestamp).toLocaleString()}
+            </p>
           </li>
         ))}
       </ul>
@@ -52,7 +56,7 @@ export default function CommentSection({ postId }) {
           <textarea
             rows="2"
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             className="p-2 border rounded"
             placeholder="Write a comment..."
           />
