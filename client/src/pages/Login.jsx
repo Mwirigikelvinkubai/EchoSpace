@@ -1,14 +1,17 @@
+// src/pages/Login.jsx
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TEMP: Simulate login
-    login({ username: form.username });
+    const success = await login(form);
+    if (success) navigate("/dashboard");
   };
 
   return (
