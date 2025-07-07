@@ -15,7 +15,7 @@ class Post(db.Model, SerializerMixin):
     mood_id = db.Column(db.Integer, db.ForeignKey('moods.id'))
 
     user = db.relationship('User', back_populates='posts')
-    mood = db.relationship('Mood', back_populates='posts')
+    mood = db.relationship('Mood')
     comments = db.relationship('Comment', back_populates='post', cascade='all, delete-orphan')
     reactions = db.relationship('Reaction', back_populates='post', cascade='all, delete-orphan')
 

@@ -25,3 +25,12 @@ class Comment(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Comment {self.id} on Post {self.post_id}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "timestamp": self.timestamp.isoformat(),
+            "user": self.user.username if self.user else "Anonymous",
+            "post_id": self.post_id
+        }
